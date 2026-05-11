@@ -6,13 +6,7 @@ Este é um template genérico com sugestões estruturais para montar um perfil d
 
 ## Título (Headline)
 
-Escolha uma das opções abaixo baseada na palavra-chave mais importante da sua área:
-
-**Opção 1 (Ampla - Recomendada):**
-[Cargo Principal] | [Habilidade Chave 1] | [Tecnologia 1], [Tecnologia 2], [Tecnologia 3]
-
-**Opção 2 (Focada em Especialidade):**
-Especialista em [Área de Atuação] | [Habilidade Chave] | Resolvendo [Problema comum do mercado]
+[Cargo Principal] | [Tecnologia 1] | [Tecnologia 2] | [Tecnologia 3]
 
 ---
 
