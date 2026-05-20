@@ -9,7 +9,7 @@ description: Analyzes job descriptions and generates tailored resumes that highl
 
 **This skill is for METHODOLOGY ONLY.** The Markdown example below is OUTDATED and must NOT be used as output format.
 
-**Resume pipeline (2025):** Edit `data/output/latex/resume-data.yml`, then run `pnpm run build-resume`. Never write `.tex` directly. Use `**bold**` and `_italic_` markers in bullets — the renderer converts them to LaTeX automatically.
+**Resume pipeline (2025):** Edit `data/output/latex/resume-data.yml`, then run `python3 scripts/build_resume.py`. Never write `.tex` directly. Use `**bold**` and `_italic_` markers in bullets — the renderer converts them to LaTeX automatically.
 
 - **ALWAYS output in LaTeX** using `templates/output/latex/curriculo_template.tex`
 - **IGNORE** the Markdown example in this file — it shows content structure only
@@ -254,7 +254,7 @@ For each job requirement:
 
 ### 6. Format and Present
 
-**Format**: Output format is **LaTeX ONLY**. Always use `templates/output/latex/curriculo_template.tex` as the base template. Output to `data/output/latex/` and compile with `pnpm run build-resume`. See `career-assistant/SKILL.md` for full template details.
+**Format**: Output format is **LaTeX ONLY**. Always use `templates/output/latex/curriculo_template.tex` as the base template. Output to `data/output/latex/` and compile with `python3 scripts/build_resume.py`. See `career-assistant/SKILL.md` for full template details.
 
 **Resume Structure Guidelines**:
 - The LaTeX template auto-adjusts page height (single continuous page, no page breaks). Keep content concise — aim for equivalent of 1 page for <10 years experience, 2 pages for 10+ years

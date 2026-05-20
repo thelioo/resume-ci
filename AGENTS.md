@@ -21,7 +21,7 @@ data/output/latex/resume-data.yml
 Then run:
 
 ```bash
-pnpm run build-resume
+python3 scripts/build_resume.py
 ```
 
 ### 2. Templates Are Structural References
@@ -43,7 +43,7 @@ Generated resume content should avoid emojis, decorative unicode, fancy quotes, 
 ```txt
 data/output/latex/resume-data.yml    -> source data
 templates/output/latex/              -> LaTeX template
-scripts/build-resume.ts              -> YAML + template -> .tex -> .pdf
+scripts/build_resume.py              -> YAML + template -> .tex -> .pdf
 data/output/latex/[name].tex         -> generated
 data/output/latex/[name].pdf         -> generated
 ```
@@ -52,7 +52,7 @@ data/output/latex/[name].pdf         -> generated
 
 1. Read `data/output/latex/resume-data.yml`.
 2. Make the smallest correct YAML change.
-3. Run `pnpm run build-resume`.
+3. Run `python3 scripts/build_resume.py`.
 4. Report the generated PDF path.
 
 ## Resume Data Schema
