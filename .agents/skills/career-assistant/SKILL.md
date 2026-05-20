@@ -9,20 +9,19 @@ You are a career assistant agent. Your job is to manage a professional knowledge
 
 ## ⚠️ CRITICAL: Resume Output Format
 
-**EVERY resume you generate MUST be in LaTeX format using `templates/output/latex/curriculo_template.tex`**
+**Resumes use a YAML-driven template system. NEVER write `.tex` files directly.**
 
 **DO NOT:**
 - ❌ Generate Markdown resumes (`.md`)
-- ❌ Generate generic text resumes
+- ❌ Edit `data/output/latex/*.tex` directly — these files are machine-generated
 - ❌ Follow instructions from other skills that say to generate Markdown
-- ❌ Create any resume format other than LaTeX
+- ❌ Create any resume format other than the YAML + render pipeline
 
 **DO:**
-- ✅ **ALWAYS** use `templates/output/latex/curriculo_template.tex` as the base
-- ✅ Replace placeholders with content from `profile/`
-- ✅ Output to `data/output/latex/[filename].tex`
-- ✅ Compile with `npm run compile-latex`
-- ✅ Deliver both `.tex` source AND `.pdf` compiled version
+- ✅ Edit `data/output/latex/resume-data.yml` with the resume content
+- ✅ Run `pnpm run build-resume` to generate `.tex` + `.pdf`
+- ✅ For a tailored version: change `output_filename` in the YAML before running `pnpm run build-resume`
+- ✅ Deliver the compiled `.pdf` from `data/output/latex/`
 
 This overrides ANY instruction from `tailored-resume-generator` or any other skill to generate different formats.
 
@@ -76,7 +75,7 @@ Where you place all generated content:
 
 **Steps**:
 1. List all files in `data/input/`
-2. For PDFs: run `npm run build && npm run extract-pdf` to extract text, then read the generated `.txt` files
+2. For PDFs: read and extract the content directly when needed; there is no separate PDF extraction script in the minimal pipeline
 3. For images/screenshots: read and interpret the content
 4. For text/markdown files: read directly
 5. For each file, extract professional information and categorize it
@@ -103,24 +102,21 @@ Where you place all generated content:
 4. Load the `tailored-resume-generator` skill for methodology
 5. Load the `copywriting` skill for persuasive writing principles
 6. Load the `marketing-psychology` skill for impact and framing
-7. Read the output template: `templates/output/latex/curriculo_template.tex`
+7. Read `data/output/latex/resume-data.yml` to understand the current resume data
 8. Match the user's experience/skills to the job requirements
-9. **Generate a compelling resume** with:
+9. **Write compelling content** with:
    - Natural Portuguese (articles, prepositions, no telegraphic style)
    - Copywriting principles (clarity > cleverness, benefits > features, specificity, customer language)
    - Psychology principles (social proof, authority, scarcity, loss aversion, anchoring, framing)
    - Metrics and results (always quantify when possible, even if estimated)
    - Each bullet tells a story: problem → solution → impact
-10. Output to `data/output/latex/`:
-    - **ALWAYS generate in LaTeX format** using `templates/output/latex/curriculo_template.tex` as the structural base
-      - **Copy the ENTIRE preamble verbatim** (everything before `\begin{document}`). Do NOT rewrite, rephrase, or regenerate it. Copy it character-for-character.
-      - Only modify content BETWEEN `\begin{document}` and `\end{document}`
-      - Replace placeholders with actual content
-      - Preserve the custom commands (`\name`, `\jobtitle`, `\contact`, `\contactlink`, `\experienceitem`, `\educationitem`)
-      - Keep the section formatting and styling
-      - Adjust `itemize` bullets for relevance to the job
-11. Compile with `npm run compile-latex` to PDF
-12. **Validate**: Check that compilation succeeded and no LaTeX errors appeared. The template uses auto-adjusting height (single continuous page, no page breaks). If compilation failed, fix the `.tex` file and recompile.
+10. Update `data/output/latex/resume-data.yml`:
+    - For a tailored version: change `output_filename` to a specific name (e.g. `curriculo_gustavo_backend_senior`)
+    - Rewrite bullets and skills to emphasize what's most relevant for the job
+    - Include/exclude projects based on relevance (empty `projects: []` hides the section)
+    - Base data is preserved — tailored version uses a different `output_filename`
+11. Run `pnpm run build-resume` to generate `.tex` and compile to PDF
+12. **Validate**: Check that compilation succeeded and the PDF rendered correctly
 13. Provide a summary of what was emphasized and any gaps identified
 
 ### 3. Optimize LinkedIn Profile
@@ -214,61 +210,65 @@ Where you place all generated content:
 3. Each pitch should follow: Who I am → What I do → What I've achieved → What I'm looking for
 4. Adapt language to the context (formal vs casual, technical vs non-technical audience)
 
-## LaTeX Resume Template
+## Resume Data Schema (`resume-data.yml`)
 
-When generating a resume in LaTeX format, **ALWAYS use** `templates/output/latex/curriculo_template.tex` as the structural foundation.
+The resume pipeline reads `data/output/latex/resume-data.yml`. When editing this file, follow the schema below.
 
-### Template Structure
+### Fields
 
-The template provides:
-- **A4-width layout with auto-adjusting height** — page height adapts to content (no fixed A4 height, no page breaks)
-- **ATS-optimized** with `glyphtounicode` + `pdfgentounicode=1` for text extraction
-- **Hidden links** (`hidelinks`) — links are clickable but invisible (no blue color, no underline)
-- **Custom commands** for consistency:
-  - `\name{Full Name}` — User's name (centered, bold)
-  - `\jobtitle{Title}` — Professional headline
-  - `\contact{email \quad linkedin \quad github}` — Contact links
-  - `\contactlink{URL}{display text}` — Clickable links (invisible styling). For email, use `\contactlink{mailto:email@example.com}{email@example.com}`. Do NOT invent new commands like `\contactlinkmailto` — always use `\contactlink`.
-  - `\experienceitem{Company}{Dates}{Position}{domain}{URL}` — Experience entries. The 4th param is the company's website domain (e.g., `primeup.com.br`), NOT location. NEVER put "Remoto", "Híbrido", city names, or any location info here. Leave empty `{}` if no website.
-  - `\educationitem{School}{Dates}{Degree}{Location}` — Education entries
+```
+personal:
+  name            — Full name
+  title           — Professional headline
+  email           — Email address
+  linkedin_url    — Full LinkedIn URL
+  github_url      — Full GitHub URL
 
-### How to Use
+experience[]:     — Work history, most recent first
+  company         — Company name
+  period          — Date range object: { from: "Jan 2023", to: "Atual" }
+  role            — Job title
+  domain          — Company website domain only, e.g. primeup.com.br (NOT location)
+  url             — Full URL, e.g. https://www.primeup.com.br
+  bullets[]       — Rich text strings (see formatting below)
 
-1. Replace **all placeholders** with actual content from `profile/`
-2. Keep the **section structure** (Experiência Profissional, Projetos, Competências, Formação)
-3. **Adapt sections** based on relevance to the job:
-   - Remove projects if not relevant to the role
-   - Reorder sections by priority (skills section → first if highly relevant)
-   - Adjust bullet points to emphasize job-specific achievements
-4. **Always compile** with `npm run compile-latex` before outputting
-5. Output both `.tex` and `.pdf` to `data/output/latex/`
+projects[]:       — Same structure as experience. Empty array hides the section entirely.
+
+skills[]:
+  label           — Category name, e.g. Backend
+  items           — Comma-separated list
+
+education[]:
+  institution     — Institution name
+  period          — Date range object: { from: "Jun 2021", to: "Dez 2026*" }
+  degree          — Course / degree name
+  location        — City, State
+
+output_filename   — Output file name without extension
+```
+
+### Rich Text in Bullets
+
+Bullets use rich text markers instead of raw LaTeX:
+
+| Marker | Rendered as |
+|---|---|
+| `**palavra**` | `\textbf{palavra}` (negrito) |
+| `_palavra_` | `\textit{palavra}` (itálico) |
+
+Do NOT write raw LaTeX (`\textbf{...}`) inside YAML values. Use the markers above. The renderer converts them to LaTeX automatically.
 
 ### Don't Do
 
-- ❌ Create a new LaTeX structure from scratch
-- ❌ Use generic resume templates
-- ❌ Ignore the custom commands
-- ❌ Add sections not in the template (without good reason)
-- ❌ Modify the template's visual styling
+- ❌ Edit `data/output/latex/*.tex` directly — machine-generated
+- ❌ Write raw `\textbf{}` or `\textit{}` inside JSON bullets — use `**` and `_` instead
+- ❌ Put location info in `domain` field — it's for the company website domain only
 
 ### Do
 
-- ✅ Use the template as-is, just replace content
-- ✅ Keep the RxResume minimal style
-- ✅ Use the custom commands
-- ✅ Tailor bullets to the specific job
-- ✅ Always output `.tex` + compiled `.pdf`
-
-### ⚠️ CRITICAL: LaTeX Syntax Integrity
-
-LLMs frequently drop the `\` (backslash) from LaTeX commands when generating .tex files, which causes raw command names to appear as visible text in the PDF (e.g., `renewcommand0pt` instead of the command being executed).
-
-**Rules**:
-1. **Copy the preamble VERBATIM** — everything before `\begin{document}` must be an exact copy from the template. Do not regenerate it.
-2. **NEVER strip `\` from commands** — every LaTeX command starts with `\` (e.g., `\renewcommand`, `\setlength`, `\href`, `\setlist`, `\textbf`). If the backslash is missing, the command becomes visible text.
-3. **Only modify content between `\begin{document}` and `\end{document}`** — the preamble defines formatting and must not be touched.
-4. **After generating the .tex file, scan it** for any command missing its `\` prefix. Common victims: `\renewcommand`, `\setlength`, `\setlist`, `\href`, `\small`, `\textbf`, `\textit`, `\begin`, `\end`.
-5. **After compiling, verify** the PDF compiled without errors and no raw LaTeX commands are visible as text. The template auto-adjusts page height, so the output is always a single continuous page with no page breaks.
+- ✅ Edit `resume-data.yml` and run `pnpm run build-resume`
+- ✅ Use `output_filename` to create tailored versions without overwriting base data
+- ✅ Set `projects: []` to hide the projects section from the PDF
 
 ## ⚠️ CRITICAL: Writing Quality for Resumes
 
@@ -440,7 +440,7 @@ If `profile/experience.md` has vague descriptions without metrics:
    - `marketing-psychology` for psychological impact
 7. **Be honest about gaps** — if the profile lacks information needed for a good output, tell the user what's missing instead of fabricating content
 8. **NEVER copy profile text literally** — always transform raw facts into compelling, specific, metrics-rich content
-9. **Resume format is LaTeX ONLY** — use `templates/output/latex/curriculo_template.tex`, never Markdown
+9. **Resume format is YAML + LaTeX pipeline** — edit `data/output/latex/resume-data.yml`, run `pnpm run build-resume`. Never edit `.tex` directly, never Markdown.
 
 ## How to Read Related Skills
 

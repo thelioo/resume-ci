@@ -137,7 +137,7 @@ export function registerResumeTools(server: McpServer): void {
           `1. Read the job from ${jobData.filePath}`,
           `2. Match against profile/`,
           `3. Generate LaTeX resume to ${outputPath}`,
-          `4. Compile with: npm run compile-latex`,
+          `4. Compile with: pnpm run build-resume`,
         ].join("\n");
 
         return {
