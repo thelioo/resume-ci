@@ -31,7 +31,7 @@ Você nunca precisa preencher nada manualmente. O agente extrai, interpreta e es
 # Clone e instale
 git clone https://github.com/gustavo-ferreira03/my-career-toolbox.git
 cd my-career-toolbox
-npm install
+pnpm install
 
 # Configure sua API key
 cp .env.example .env
@@ -41,7 +41,7 @@ cp .env.example .env
 ### Uso
 
 1. Coloque seus arquivos em `data/input/` (PDFs do currículo, export do LinkedIn, etc.)
-2. Abra o agente (`npm run agent` ou use Cursor/Copilot/OpenCode)
+2. Abra o agente (use OpenCode/Cursor/Copilot)
 3. Peça ao agente: *"Processe meus arquivos"*
 4. Depois peça qualquer output:
    - *"Gere um currículo para esta vaga: [link ou texto]"*
@@ -74,8 +74,7 @@ Tudo já vem instalado (Node.js, LaTeX, agente).
 │   ├── profile/            ← Estrutura dos arquivos do knowledge base
 │   └── output/             ← Templates de formato de output
 ├── scripts/
-│   ├── extract-pdf.ts      ← Extrai texto de PDFs
-│   └── compile-latex.ts    ← Compila LaTeX para PDF
+│   └── build-resume.ts     ← Gera .tex e PDF a partir de YAML
 └── .agents/skills/         ← Skills do agente
     ├── career-assistant/           ← Skill principal (orquestra tudo)
     ├── tailored-resume-generator/  ← Personaliza currículo para vagas
@@ -105,10 +104,7 @@ Tudo já vem instalado (Node.js, LaTeX, agente).
 ## Scripts
 
 ```bash
-npm run extract-pdf      # Extrai texto dos PDFs em data/input/
-npm run compile-latex    # Compila arquivos .tex em data/output/latex/
-npm run agent            # Abre agente interativo
-npm run agent:run "msg"  # Executa agente com uma mensagem
+pnpm run build-resume    # Valida data/output/latex/resume-data.yml, gera .tex e compila o PDF
 ```
 
 ---

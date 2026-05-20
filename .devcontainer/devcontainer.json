@@ -17,7 +17,7 @@
       }
     }
   },
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "pnpm install",
   "portsAttributes": {
     "7856": {
       "label": "OpenCode Web Interface",

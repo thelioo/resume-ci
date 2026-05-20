@@ -8,13 +8,19 @@ Glob **silently returns empty results** in this project. You will think files do
 
 **Use `find` or `ls` via Bash instead.** Example: `find data/input -type f` or `ls profile/`.
 
-### 2. Resumes are LaTeX ONLY
+### 2. Resumes use a YAML-driven template system
 
-**NEVER generate Markdown resumes.** Always use `templates/output/latex/curriculo_template.tex` as the base. Output `.tex` to `data/output/latex/`, then compile with `npm run compile-latex`.
+**NEVER write `.tex` files directly.** Edit `data/output/latex/resume-data.yml` instead. Then run:
 
-**Copy the preamble (everything before `\begin{document}`) VERBATIM from the template. Only modify content between `\begin{document}` and `\end{document}`. NEVER strip `\` from LaTeX commands.**
+```
+pnpm run build-resume
+```
 
-The `tailored-resume-generator` skill shows Markdown examples — **IGNORE its format, use LaTeX.**
+The `.tex` in `data/output/latex/` is **machine-generated** — never edit it manually. The template at `templates/output/latex/curriculo_template.tex` is **never modified** (structural reference only).
+
+To create a tailored version for a specific job: edit the YAML and change `output_filename` to a unique name (e.g. `curriculo_gustavo_backend_senior`). The base data stays intact.
+
+The `tailored-resume-generator` skill shows Markdown examples — **IGNORE its format, use the YAML + render pipeline.**
 
 ### 3. Only these skills exist
 
@@ -23,6 +29,7 @@ Do NOT attempt to load skills not on this list — they don't exist and will fai
 | Skill | When to Load |
 |---|---|
 | `career-assistant` | **ALWAYS — read this first** |
+| `grill-me` | Stress-test a plan or design via relentless Q&A (general purpose) |
 | `tailored-resume-generator` | Resume methodology (ignore its Markdown format) |
 | `linkedin-profile-optimizer` | LinkedIn optimization |
 | `copywriting` | Persuasive writing (bullets, headlines) |
@@ -71,10 +78,15 @@ NEVER use emojis, unicode arrows, em-dashes, en-dashes, fancy quotes, or any dec
 ## Quick Architecture
 
 ```
-data/input/     → User drops files here
-profile/        → Knowledge base (agent generates/maintains)
-data/output/    → Generated outputs go here
-templates/      → Structural references (never modify)
+data/input/                          → User drops files here
+profile/                             → Knowledge base (agent generates/maintains)
+data/output/latex/resume-data.yml    → Resume variables (edit this, not .tex)
+  + templates/output/latex/          → Template with {{placeholders}}
+       ↓ pnpm run build-resume
+data/output/latex/[name].tex         → Machine-generated (never edit manually)
+data/output/latex/[name].pdf         → Final PDF
+data/output/                         → All other generated outputs
+templates/                           → Structural references (never modify)
 ```
 
 ## MCP LinkedIn Server (`mcp-linkedin/`)
