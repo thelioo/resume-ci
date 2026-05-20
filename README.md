@@ -9,7 +9,7 @@ O projeto evita edicao manual de `.tex`: voce edita `data/output/latex/resume-da
 ```txt
 data/output/latex/resume-data.yml
   + templates/output/latex/curriculo_template.tex
-  -> pnpm run build-resume
+  -> python3 scripts/build_resume.py
   -> data/output/latex/[output_filename].tex
   -> data/output/latex/[output_filename].pdf
 ```
@@ -17,8 +17,8 @@ data/output/latex/resume-data.yml
 ## Comeco Rapido
 
 ```bash
-pnpm install
-pnpm run build-resume
+pip install -r requirements.txt
+python3 scripts/build_resume.py
 ```
 
 O PDF sera gerado em `data/output/latex/`, usando o valor de `output_filename` definido no YAML.
@@ -35,7 +35,7 @@ templates/output/latex/
   curriculo_template.tex   Template LaTeX com placeholders.
 
 scripts/
-  build-resume.ts          Valida YAML, renderiza LaTeX e compila PDF.
+  build_resume.py          Valida YAML, renderiza LaTeX e compila PDF.
 ```
 
 ## Dados Do Curriculo
@@ -93,16 +93,15 @@ Nao escreva LaTeX bruto dentro do YAML.
 ## Scripts
 
 ```bash
-pnpm run build-resume
+python3 scripts/build_resume.py
 ```
 
 Esse comando:
 
-1. Compila o TypeScript.
-2. Valida `resume-data.yml` com Zod.
-3. Renderiza o template LaTeX.
-4. Compila o PDF com `pdflatex`.
-5. Remove arquivos auxiliares do LaTeX.
+1. Valida `resume-data.yml` com Pydantic.
+2. Renderiza o template LaTeX.
+3. Compila o PDF com `pdflatex`.
+4. Remove arquivos auxiliares do LaTeX.
 
 ## Privacidade
 

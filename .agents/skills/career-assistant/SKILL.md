@@ -20,7 +20,7 @@ data/output/latex/resume-data.yml
 Then run:
 
 ```bash
-pnpm run build-resume
+python3 scripts/build_resume.py
 ```
 
 ## Files
@@ -28,7 +28,7 @@ pnpm run build-resume
 ```txt
 data/output/latex/resume-data.yml       Source data
 templates/output/latex/curriculo_template.tex  Template
-scripts/build-resume.ts                 Renderer/compiler
+scripts/build_resume.py                 Renderer/compiler
 data/output/latex/[name].tex            Generated
 data/output/latex/[name].pdf            Generated
 ```
@@ -37,7 +37,7 @@ data/output/latex/[name].pdf            Generated
 
 1. Read `data/output/latex/resume-data.yml`.
 2. Edit YAML content only.
-3. Run `pnpm run build-resume`.
+3. Run `python3 scripts/build_resume.py`.
 4. Confirm the PDF path.
 
 ## Schema
