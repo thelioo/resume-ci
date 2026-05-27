@@ -1,0 +1,38 @@
+name: Build Resumes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "resumes/*.yml"
+      - "template.tex"
+      - "build.py"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LaTeX
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-fonts-extra
+
+      - name: Install Python dependencies
+        run: pip install pyyaml
+
+      - name: Build resumes
+        run: python3 build.py
+
+      - name: Upload PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: resumes-${{ github.sha }}
+          path: resumes/*.pdf
+          retention-days: 90
