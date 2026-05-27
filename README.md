@@ -1,4 +1,4 @@
-# Resume Manager
+# ResumeCI
 
 Build PDF resumes from YAML. Edit the content, push to GitHub, and download the finished PDF from Actions.
 
