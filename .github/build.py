@@ -26,6 +26,7 @@ except ImportError:
 
 DEFAULT_TEMPLATE = Path.cwd() / "template.tex"
 DEFAULT_DATA_DIR = Path.cwd()
+BUILD_DIR = Path.cwd() / "build"
 BEGIN_DOCUMENT = r"\begin{document}"
 END_DOCUMENT = r"\end{document}"
 
@@ -49,8 +50,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build resume PDFs from YAML files.")
     parser.add_argument("data_paths", nargs="*", type=Path, help="YAML resume files to build")
     parser.add_argument("--template", type=Path, default=DEFAULT_TEMPLATE, help="LaTeX template path")
-    parser.add_argument("--output-dir", type=Path, help="Output directory for .pdf files")
+    parser.add_argument("--output-dir", type=Path, help="Output directory (default: build/)")
     parser.add_argument("--keep-aux", action="store_true", help="Keep pdflatex aux/log files")
+    parser.add_argument("--tex-only", action="store_true", help="Generate .tex only, skip PDF compilation")
     return parser.parse_args()
 
 
@@ -271,7 +273,13 @@ def build_context(data: dict) -> dict:
     }
 
 
-def build_resume(data_path: Path, template: str, output_dir: Path | None, keep_aux: bool) -> Path:
+def build_resume(
+    data_path: Path,
+    template: str,
+    output_dir: Path | None,
+    keep_aux: bool,
+    tex_only: bool = False,
+) -> Path:
     raw = yaml.safe_load(data_path.read_text())
     data = validate_resume(raw, data_path)
     ctx = build_context(data)
@@ -286,14 +294,17 @@ def build_resume(data_path: Path, template: str, output_dir: Path | None, keep_a
         + "\n"
     )
 
-    target_dir = output_dir or data_path.parent
+    target_dir = output_dir or BUILD_DIR
     target_dir.mkdir(parents=True, exist_ok=True)
 
     output_name = data["output_filename"]
     tex_path = target_dir / f"{output_name}.tex"
-    pdf_path = target_dir / f"{output_name}.pdf"
     tex_path.write_text(tex)
 
+    if tex_only:
+        return tex_path
+
+    pdf_path = target_dir / f"{output_name}.pdf"
     result = subprocess.run(
         ["pdflatex", "-interaction=nonstopmode", "-output-directory", str(target_dir), str(tex_path)],
     )
@@ -321,8 +332,9 @@ def main() -> None:
     failed = False
     for path in data_paths:
         try:
-            pdf_path = build_resume(path, template, args.output_dir, args.keep_aux)
-            print(f"OK: {pdf_path}")
+            out = build_resume(path, template, args.output_dir, args.keep_aux, args.tex_only)
+            label = "TEX" if args.tex_only else "PDF"
+            print(f"{label}: {out}")
         except Exception as exc:
             print(f"FAILED {path}: {exc}", file=sys.stderr)
             failed = True
