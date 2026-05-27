@@ -2,29 +2,15 @@
 __pycache__/
 *.pyc
 
-# Environment files
+# Generated resume files (download from GitHub Actions artifacts)
+resumes/*.pdf
+resumes/*.tex
+
+# Personal data
 .env
-.env.local
-.env.*.local
-
-# Personal data — never commit
-data/input/
-data/output/markdown/
 profile/
+data/
 
-# Generated files — download from GitHub Actions artifacts instead
-data/output/latex/*.pdf
-data/output/latex/*.tex
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# Editor directories
-.idea/
-.vscode/
-*.swp
-*.swo
+# Local AI tooling — personal, not part of the template
+.agents/
+skills/

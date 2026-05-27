@@ -1,46 +1,39 @@
 # Resume Manager
 
-A GitHub template repository for building professional LaTeX/PDF resumes from YAML data files — no local LaTeX or Python required.
+GitHub template repository for building LaTeX/PDF resumes from YAML — no local LaTeX required.
 
-Push your YAML → GitHub Actions compiles it → PDF ready as a workflow artifact.
+Push your YAML → GitHub Actions compiles → PDF available as artifact.
 
 ## Quick Start
 
-1. Click **"Use this template"** and create your **private** repository
-2. Copy an example YAML to the resume data directory:
+1. Click **"Use this template"** → create a **private** repository
+2. Copy an example to your resume file:
    ```bash
-   cp skills/resume-manager/examples/resume-data-en.example.yml \
-      data/output/latex/resume-data.yml
+   cp resumes/resume-en.example.yml resumes/resume-en.yml
    ```
-3. Edit `data/output/latex/resume-data.yml` with your information
-4. Push to `main` → check the **Actions** tab → download the PDF artifact
+3. Edit `resumes/resume-en.yml` with your information
+4. Push to `main` → **Actions** tab → download the PDF artifact
 
-> **Privacy:** Keep your repository private. Your YAML files contain personal contact information.
+> **Keep your repo private.** Resume files contain personal contact information.
 
 ## How It Works
 
 ```
-data/output/latex/resume-data.yml
-  + templates/output/latex/curriculo_template.tex
-  → skills/resume-manager/scripts/build_resume.py
-  → PDF (uploaded as GitHub Actions artifact, 90-day retention)
+resumes/*.yml  +  template.tex  →  build.py  →  PDF artifact
 ```
 
-The build script validates your YAML, renders the LaTeX template, and compiles a PDF — all in CI, so you need nothing installed locally.
+The build script validates your YAML, renders the LaTeX template, and compiles a PDF — all in CI.
 
-## Multiple Languages / Resumes
+## Multiple Resumes
 
-Name your files `resume-data-<suffix>.yml` to build multiple PDFs in one run:
+Any `*.yml` file in `resumes/` (except `*.example.yml`) is built automatically:
 
 ```
-data/output/latex/
-  resume-data-en.yml   →  resume_your_name_en.pdf
-  resume-data-pt.yml   →  resume_seu_nome_pt.pdf
+resumes/resume-en.yml   →  resume_your_name_en.pdf
+resumes/resume-pt.yml   →  resume_seu_nome_pt.pdf
 ```
 
 ## YAML Schema
-
-Full reference: [`skills/resume-manager/references/resume-schema.md`](skills/resume-manager/references/resume-schema.md)
 
 ```yaml
 personal:
@@ -60,13 +53,11 @@ section_titles:
 
 experience:
   - company: Company Name
-    period:
-      from: Jan 2023
-      to: Present
+    period: { from: Jan 2023, to: Present }
     role: Your Role
     url: https://company.com
     bullets:
-      - Built a feature with **bold text** and _italic text_.
+      - Built something with **bold** and _italic_ markers.
 
 projects: []  # set to [] to hide the section
 
@@ -76,27 +67,12 @@ skills:
 
 education:
   - institution: University Name
-    period:
-      from: Jan 2020
-      to: Dec 2024
+    period: { from: Jan 2020, to: Dec 2024 }
     degree: Bachelor of Science in Computer Science
     location: City, State
 
 output_filename: resume_your_name  # letters, digits, _ and - only
 ```
-
-### Bullet Formatting
-
-| YAML marker | Result |
-|---|---|
-| `**text**` | **bold** |
-| `_text_` | _italic_ |
-
-Do not write raw LaTeX inside YAML bullets.
-
-## Customizing the Layout
-
-Edit `templates/output/latex/curriculo_template.tex` to change fonts, margins, or section order. The CI picks up template changes automatically on the next push.
 
 ## Running Locally
 
@@ -104,19 +80,12 @@ Requires Python 3.10+ and a LaTeX distribution with `pdflatex`.
 
 ```bash
 pip install pyyaml
-python3 skills/resume-manager/scripts/build_resume.py \
-  --template templates/output/latex/curriculo_template.tex
+python3 build.py
 ```
 
-## Using with Claude Code (optional)
+## Customizing the Layout
 
-This repo bundles [Claude Code](https://claude.ai/code) skills for AI-assisted resume editing. To install the resume-manager skill locally:
-
-```bash
-cp -r skills/resume-manager ~/.claude/skills/
-```
-
-Then in Claude Code, the `resume-manager` skill can help tailor resume bullets to job descriptions, rewrite sections, and validate your YAML.
+Edit `template.tex` to change margins, fonts, or section order.
 
 ## License
 

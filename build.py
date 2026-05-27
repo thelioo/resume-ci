@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Build one or more YAML resumes into LaTeX and PDF files.
 
-This script is designed to be bundled inside the resume-manager skill. Run it
-from a workspace that contains resume YAML files, or pass YAML paths explicitly.
+Run from the repo root. YAML files in resumes/ are discovered automatically.
+Pass YAML paths explicitly to build specific files only.
 """
 
 from __future__ import annotations
@@ -21,9 +21,8 @@ except ImportError:  # pragma: no cover - user-facing dependency message
     sys.exit(1)
 
 
-DEFAULT_TEMPLATE = Path.cwd() / "templates" / "output" / "latex" / "curriculo_template.tex"
-DEFAULT_DATA_DIR = Path.cwd() / "data" / "output" / "latex"
-DEFAULT_DATA_PATH = DEFAULT_DATA_DIR / "resume-data.yml"
+DEFAULT_TEMPLATE = Path.cwd() / "template.tex"
+DEFAULT_DATA_DIR = Path.cwd() / "resumes"
 BEGIN_DOCUMENT = r"\begin{document}"
 END_DOCUMENT = r"\end{document}"
 
@@ -56,15 +55,15 @@ def discover_data_paths(explicit_paths: list[Path]) -> list[Path]:
     if explicit_paths:
         return explicit_paths
 
-    localized_paths = sorted(DEFAULT_DATA_DIR.glob("resume-data-*.yml"))
-    if localized_paths:
-        return localized_paths
-
-    if DEFAULT_DATA_PATH.exists():
-        return [DEFAULT_DATA_PATH]
+    found = sorted(
+        p for p in DEFAULT_DATA_DIR.glob("*.yml")
+        if not p.name.endswith(".example.yml")
+    )
+    if found:
+        return found
 
     print(
-        "No resume YAML files found. Create data/output/latex/resume-data.yml "
+        "No resume YAML files found. Add a .yml file to the resumes/ directory "
         "or pass one or more YAML paths explicitly.",
         file=sys.stderr,
     )
