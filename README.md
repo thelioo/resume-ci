@@ -9,9 +9,9 @@ Push your YAML → GitHub Actions compiles → PDF available as artifact.
 1. Click **"Use this template"** → create a **private** repository
 2. Copy an example and rename it:
    ```bash
-   cp resume-en.example.yml resume-en.yml
+   cp resumes/resume-en.example.yml resumes/resume-en.yml
    ```
-3. Edit `resume-en.yml` with your information
+3. Edit `resumes/resume-en.yml` with your information
 4. Push to `main` → **Actions** tab → download the PDF artifact
 
 > **Keep your repo private.** Resume files contain personal contact information.
@@ -28,11 +28,11 @@ No build script to maintain — just YAML and a template.
 
 ## Multiple Resumes
 
-Any `*.yml` file in the root (except `*.example.yml`) is built automatically:
+Any `*.yml` file in `resumes/` (except `*.example.yml`) is built automatically:
 
 ```
-resume-en.yml   →  resume_your_name_en.pdf
-resume-pt.yml   →  resume_seu_nome_pt.pdf
+resumes/resume-en.yml   →  resume_your_name_en.pdf
+resumes/resume-ptbr.yml →  curriculo_seu_nome_ptbr.pdf
 ```
 
 ## YAML Schema

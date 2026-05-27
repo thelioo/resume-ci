@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "*.yml"
+      - "resumes/*.yml"
       - "template.tex"
       - ".github/build.py"
       - ".github/workflows/build.yml"

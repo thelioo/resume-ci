@@ -8,10 +8,10 @@ personal:
 font: lmodern
 
 section_titles:
-  experience: Experiencia Profissional
+  experience: Experiência Profissional
   projects: Projetos
-  education: Formacao Academica
-  skills: Competencias e Idiomas
+  education: Formação Acadêmica
+  skills: Competências e Idiomas
 
 experience:
   - company: Empresa Exemplo
@@ -21,8 +21,8 @@ experience:
     role: Desenvolvedor Full Stack
     url: https://example.com
     bullets:
-      - Desenvolvi **APIs REST** com **Node.js** e **PostgreSQL**, melhorando fluxos internos de relatorios usados por equipes de operacao.
-      - Implementei testes automatizados com **Playwright** e **Jest**, reduzindo validacoes manuais antes de releases.
+      - Desenvolvi **APIs REST** com **Node.js** e **PostgreSQL**, melhorando fluxos internos de relatórios usados por equipes de operação.
+      - Implementei testes automatizados com **Playwright** e **Jest**, reduzindo validações manuais antes de releases.
 
 projects:
   - company: Painel de Analytics
@@ -33,14 +33,14 @@ projects:
     url: https://github.com/alex-morgan/analytics-dashboard
     bullets:
       - Desenvolvi um painel com **React**, **TypeScript** e **PostgreSQL** para acompanhar uso do produto e atividade de clientes.
-      - Adicionei jobs em segundo plano e caching para tirar relatorios lentos do fluxo principal de requisicoes.
+      - Adicionei jobs em segundo plano e caching para tirar relatórios lentos do fluxo principal de requisições.
 
 education:
   - institution: Universidade Estadual
     period:
       from: Ago 2018
       to: Mai 2022
-    degree: Bacharelado em Ciencia da Computacao
+    degree: Bacharelado em Ciência da Computação
     location: Cidade, Estado
 
 skills:
@@ -55,6 +55,6 @@ skills:
   - label: Testes
     items: Playwright, Selenium, Jest, JUnit
   - label: Idiomas
-    items: Portugues (Nativo), Ingles (Profissional)
+    items: Português (Nativo), Inglês (Profissional)
 
-output_filename: curriculo_alex_morgan_pt
+output_filename: curriculo_alex_morgan_ptbr

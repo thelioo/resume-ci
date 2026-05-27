@@ -25,7 +25,7 @@ except ImportError:
 
 
 DEFAULT_TEMPLATE = Path.cwd() / "template.tex"
-DEFAULT_DATA_DIR = Path.cwd()
+DEFAULT_DATA_DIR = Path.cwd() / "resumes"
 BUILD_DIR = Path.cwd() / "build"
 BEGIN_DOCUMENT = r"\begin{document}"
 END_DOCUMENT = r"\end{document}"
@@ -67,7 +67,7 @@ def discover_data_paths(explicit_paths: list[Path]) -> list[Path]:
     if found:
         return found
 
-    print("No resume YAML files found. Add a .yml file to the repo root.", file=sys.stderr)
+    print("No resume YAML files found. Add a .yml file to resumes/.", file=sys.stderr)
     sys.exit(1)
 
 
