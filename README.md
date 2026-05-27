@@ -4,8 +4,6 @@
 
 Push your YAML → GitHub Actions compiles → PDF artifact ready to download.
 
-![Resume preview](docs/preview.png)
-
 ---
 
 ## Quick Start
