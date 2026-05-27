@@ -60,10 +60,7 @@ def discover_data_paths(explicit_paths: list[Path]) -> list[Path]:
     if explicit_paths:
         return explicit_paths
 
-    found = sorted(
-        p for p in DEFAULT_DATA_DIR.glob("*.yml")
-        if not p.name.endswith(".example.yml")
-    )
+    found = sorted(DEFAULT_DATA_DIR.glob("*.yml"))
     if found:
         return found
 
