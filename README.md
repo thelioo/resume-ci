@@ -1,112 +1,123 @@
 # Resume Manager
 
-Pipeline simples para manter dados de curriculo em YAML e gerar um curriculo em LaTeX/PDF.
+A GitHub template repository for building professional LaTeX/PDF resumes from YAML data files — no local LaTeX or Python required.
 
-O projeto evita edicao manual de `.tex`: voce edita `data/output/latex/resume-data.yml`, roda um comando, e o template gera o `.tex` e o `.pdf` finais.
+Push your YAML → GitHub Actions compiles it → PDF ready as a workflow artifact.
 
-## Como Funciona
+## Quick Start
 
-```txt
+1. Click **"Use this template"** and create your **private** repository
+2. Copy an example YAML to the resume data directory:
+   ```bash
+   cp skills/resume-manager/examples/resume-data-en.example.yml \
+      data/output/latex/resume-data.yml
+   ```
+3. Edit `data/output/latex/resume-data.yml` with your information
+4. Push to `main` → check the **Actions** tab → download the PDF artifact
+
+> **Privacy:** Keep your repository private. Your YAML files contain personal contact information.
+
+## How It Works
+
+```
 data/output/latex/resume-data.yml
   + templates/output/latex/curriculo_template.tex
-  -> python3 scripts/build_resume.py
-  -> data/output/latex/[output_filename].tex
-  -> data/output/latex/[output_filename].pdf
+  → skills/resume-manager/scripts/build_resume.py
+  → PDF (uploaded as GitHub Actions artifact, 90-day retention)
 ```
 
-## Comeco Rapido
+The build script validates your YAML, renders the LaTeX template, and compiles a PDF — all in CI, so you need nothing installed locally.
 
-```bash
-pip install -r requirements.txt
-python3 scripts/build_resume.py
+## Multiple Languages / Resumes
+
+Name your files `resume-data-<suffix>.yml` to build multiple PDFs in one run:
+
 ```
-
-O PDF sera gerado em `data/output/latex/`, usando o valor de `output_filename` definido no YAML.
-
-## Estrutura
-
-```txt
 data/output/latex/
-  resume-data.yml          Dados do curriculo. Edite este arquivo.
-  [nome].tex               Gerado automaticamente. Nao edite.
-  [nome].pdf               PDF final.
-
-templates/output/latex/
-  curriculo_template.tex   Template LaTeX com placeholders.
-
-scripts/
-  build_resume.py          Valida YAML, renderiza LaTeX e compila PDF.
+  resume-data-en.yml   →  resume_your_name_en.pdf
+  resume-data-pt.yml   →  resume_seu_nome_pt.pdf
 ```
 
-## Dados Do Curriculo
+## YAML Schema
 
-O arquivo principal e `data/output/latex/resume-data.yml`.
-
-Campos principais:
+Full reference: [`skills/resume-manager/references/resume-schema.md`](skills/resume-manager/references/resume-schema.md)
 
 ```yaml
 personal:
-  name: Seu Nome
-  title: Seu Cargo
-  email: seu@email.com
-  linkedin_url: https://linkedin.com/in/seu-usuario
-  github_url: https://github.com/seu-usuario
+  name: Your Name
+  title: Your Title
+  email: your@email.com
+  linkedin_url: https://linkedin.com/in/your-username
+  github_url: https://github.com/your-username
+
+font: lmodern  # lmodern | charter | cormorant | fira-sans | source-sans
+
+section_titles:
+  experience: Experience
+  projects: Projects
+  education: Education
+  skills: Technical Skills
 
 experience:
-  - company: Empresa
+  - company: Company Name
     period:
       from: Jan 2023
-      to: Atual
-    role: Cargo
-    url: https://empresa.com
+      to: Present
+    role: Your Role
+    url: https://company.com
     bullets:
-      - Desenvolvi uma funcionalidade com **destaque em negrito**.
+      - Built a feature with **bold text** and _italic text_.
 
-projects: []
+projects: []  # set to [] to hide the section
 
 skills:
   - label: Backend
     items: TypeScript, Node.js, PostgreSQL
 
 education:
-  - institution: Universidade
+  - institution: University Name
     period:
-      from: Jun 2021
-      to: Dez 2026
-    degree: Bacharelado em Ciencia da Computacao
-    location: Niteroi, RJ
+      from: Jan 2020
+      to: Dec 2024
+    degree: Bachelor of Science in Computer Science
+    location: City, State
 
-output_filename: curriculo_nome
+output_filename: resume_your_name  # letters, digits, _ and - only
 ```
 
-## Formatacao De Bullets
+### Bullet Formatting
 
-Use marcadores simples no YAML:
-
-| YAML | LaTeX gerado |
+| YAML marker | Result |
 |---|---|
-| `**texto**` | `\textbf{texto}` |
-| `_texto_` | `\textit{texto}` |
+| `**text**` | **bold** |
+| `_text_` | _italic_ |
 
-Nao escreva LaTeX bruto dentro do YAML.
+Do not write raw LaTeX inside YAML bullets.
 
-## Scripts
+## Customizing the Layout
+
+Edit `templates/output/latex/curriculo_template.tex` to change fonts, margins, or section order. The CI picks up template changes automatically on the next push.
+
+## Running Locally
+
+Requires Python 3.10+ and a LaTeX distribution with `pdflatex`.
 
 ```bash
-python3 scripts/build_resume.py
+pip install pyyaml
+python3 skills/resume-manager/scripts/build_resume.py \
+  --template templates/output/latex/curriculo_template.tex
 ```
 
-Esse comando:
+## Using with Claude Code (optional)
 
-1. Valida `resume-data.yml` com Pydantic.
-2. Renderiza o template LaTeX.
-3. Compila o PDF com `pdflatex`.
-4. Remove arquivos auxiliares do LaTeX.
+This repo bundles [Claude Code](https://claude.ai/code) skills for AI-assisted resume editing. To install the resume-manager skill locally:
 
-## Privacidade
+```bash
+cp -r skills/resume-manager ~/.claude/skills/
+```
 
-`data/` fica fora do Git por padrao, porque contem informacoes pessoais e arquivos gerados.
+Then in Claude Code, the `resume-manager` skill can help tailor resume bullets to job descriptions, rewrite sections, and validate your YAML.
 
-## Licenca
+## License
 
-MIT - Gustavo Cosme
+MIT
