@@ -39,5 +39,5 @@ jobs:
         run: |
           gh release delete latest --cleanup-tag --yes 2>/dev/null || true
           gh release create latest build/*.pdf \
-            --title "Latest Build" \
+            --title "Resumes" \
             --notes "Built from [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
