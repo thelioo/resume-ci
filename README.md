@@ -4,7 +4,9 @@ Build PDF resumes from YAML. Edit the content, push to GitHub, and download the 
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-This template is for people who want a clean LaTeX resume without installing LaTeX. Your resume data stays in `resumes/*.yml`. The layout stays in `template.tex`. GitHub Actions handles the compile step.
+This project is for people who want a clean LaTeX resume without installing LaTeX. Your resume data stays in `resumes/*.yml`. The layout stays in `template.tex`. GitHub Actions handles the compile step.
+
+Fork the repository to get started — forking keeps a connection to upstream so you can pull in improvements to the template and workflow later.
 
 ## What You Get
 
@@ -16,7 +18,7 @@ This template is for people who want a clean LaTeX resume without installing LaT
 
 ## Quick Start
 
-1. Click [Use this template](https://github.com/new?template_name=resume-ci&template_owner=gustavo-ferreira03) and create a private repository.
+1. [Fork this repository](../../fork) and make your fork **private**.
 2. Copy an example file:
 
    ```bash
@@ -28,7 +30,18 @@ This template is for people who want a clean LaTeX resume without installing LaT
 5. Go to the **Releases** tab and download your PDF.
 
 > [!IMPORTANT]
-> Remember to keep your repository **private** as resume files may contain personal contact information.
+> Keep your fork **private**. Resume files contain personal contact information.
+
+## Pulling Upstream Updates
+
+When the template or workflow is improved, sync your fork:
+
+```bash
+git fetch upstream
+git merge upstream/main
+```
+
+Your files in `resumes/` are not part of this repository, so merges will be conflict-free.
 
 ## How It Works
 
