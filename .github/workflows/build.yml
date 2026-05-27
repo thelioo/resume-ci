@@ -32,8 +32,18 @@ jobs:
           args: "-interaction=nonstopmode -halt-on-error"
 
       - name: Upload PDFs
-        uses: actions/upload-artifact@v4
-        with:
-          name: resumes-${{ github.sha }}
-          path: "build/*.pdf"
-          retention-days: 90
+        run: |
+          npm install --prefix /tmp/art @actions/artifact@2 --silent
+          node << 'JS'
+          const { DefaultArtifactClient } = require('/tmp/art/node_modules/@actions/artifact');
+          const fs = require('fs'), path = require('path');
+          (async () => {
+            const client = new DefaultArtifactClient();
+            const pdfs = fs.readdirSync('build').filter(f => f.endsWith('.pdf'));
+            for (const pdf of pdfs) {
+              const name = path.basename(pdf, '.pdf');
+              await client.uploadArtifact(name, ['build/' + pdf], 'build', { retentionDays: 90 });
+              console.log('✓ ' + name);
+            }
+          })().catch(e => { console.error(e); process.exit(1); });
+          JS

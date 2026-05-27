@@ -5,7 +5,11 @@
 \AtEndDocument{%
   \newlength{\contentHeight}%
   \setlength{\contentHeight}{\dimexpr\pagetotal+1cm\relax}%
-  \pdfpageheight=\contentHeight%
+  \ifdim\contentHeight<297mm%
+    \pdfpageheight=297mm%
+  \else%
+    \pdfpageheight=\contentHeight%
+  \fi%
 }
 
 \input{glyphtounicode}
