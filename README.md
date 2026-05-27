@@ -16,28 +16,28 @@ This project is for people who want a clean LaTeX resume without installing LaTe
 
 ## Quick Start
 
-1. Create a new **private** repository on GitHub (do not initialize it).
-2. Clone and rewire this repo to your private one:
+**Option A — Public repo:** [Fork this repository](../../fork), then skip to step 2.
 
-   ```bash
-   git clone https://github.com/gustavo-ferreira03/resume-ci.git
-   cd resume-ci
-   git remote rename origin upstream
-   git remote add origin https://github.com/YOUR_USERNAME/YOUR_PRIVATE_REPO.git
-   git push -u origin main
-   ```
+**Option B — Private repo:** Create a new private repository on GitHub (do not initialize it), then clone and rewire:
 
-3. Copy an example file and edit it with your details:
+```bash
+git clone https://github.com/gustavo-ferreira03/resume-ci.git
+cd resume-ci
+git remote rename origin upstream
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_PRIVATE_REPO.git
+git push -u origin main
+```
+
+Either way, continue from here:
+
+1. Copy an example file and fill in your details:
 
    ```bash
    cp resumes/resume-en.example.yml resumes/resume-en.yml
    ```
 
-4. Push to `main`.
-5. Go to the **Releases** tab and download your PDF.
-
-> [!IMPORTANT]
-> Keep your repository **private**. Resume files contain personal contact information.
+2. Push to `main`.
+3. Go to the **Releases** tab and download your PDF.
 
 ## Pulling Upstream Updates
 
