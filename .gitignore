@@ -1,17 +1,4 @@
-# Python cache
 __pycache__/
-*.pyc
-
-# Generated resume outputs
 *.pdf
 *.tex
 !template.tex
-
-# Personal data
-.env
-profile/
-data/
-
-# Local AI tooling
-.agents/
-skills/
