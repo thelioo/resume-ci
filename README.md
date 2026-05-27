@@ -16,7 +16,7 @@ This template is for people who want a clean LaTeX resume without installing LaT
 
 ## Quick Start
 
-1. Click [Use this template](generate) and create a private repository.
+1. Click [Use this template](https://github.com/new?template_name=resume-ci&template_owner=gustavo-ferreira03) and create a private repository.
 2. Copy an example file:
 
    ```bash
