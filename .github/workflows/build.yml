@@ -6,8 +6,6 @@ on:
     paths:
       - "resumes/*.yml"
       - "template.tex"
-      - ".github/build.py"
-      - ".github/workflows/build.yml"
   workflow_dispatch:
 
 jobs:
