@@ -13,6 +13,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -31,19 +33,11 @@ jobs:
           compiler: pdflatex
           args: "-interaction=nonstopmode -halt-on-error"
 
-      - name: Upload PDFs
+      - name: Publish PDFs
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          npm install --prefix /tmp/art @actions/artifact@2 --silent
-          node << 'JS'
-          const { DefaultArtifactClient } = require('/tmp/art/node_modules/@actions/artifact');
-          const fs = require('fs'), path = require('path');
-          (async () => {
-            const client = new DefaultArtifactClient();
-            const pdfs = fs.readdirSync('build').filter(f => f.endsWith('.pdf'));
-            for (const pdf of pdfs) {
-              const name = path.basename(pdf, '.pdf');
-              await client.uploadArtifact(name, ['build/' + pdf], 'build', { retentionDays: 90 });
-              console.log('✓ ' + name);
-            }
-          })().catch(e => { console.error(e); process.exit(1); });
-          JS
+          gh release delete latest --cleanup-tag --yes 2>/dev/null || true
+          gh release create latest build/*.pdf \
+            --title "Latest Build" \
+            --notes "Built from [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
