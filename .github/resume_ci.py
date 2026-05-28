@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-"""Build one or more YAML resumes into LaTeX and PDF files.
-
-Run from the repo root:
-    python3 .github/resume_ci.py
-
-YAML files at the repo root are discovered automatically (*.example.yml excluded).
-Pass paths explicitly to build specific files only.
-"""
 
 from __future__ import annotations
 
@@ -24,287 +16,258 @@ except ImportError:
     sys.exit(1)
 
 
-DEFAULT_TEMPLATE = Path.cwd() / "template.tex"
-DEFAULT_DATA_DIR = Path.cwd() / "resumes"
+DATA_DIR = Path.cwd() / "resumes"
 BUILD_DIR = Path.cwd() / "build"
-BEGIN_DOCUMENT = r"\begin{document}"
-END_DOCUMENT = r"\end{document}"
-
-FONT_PACKAGES = {
+FONTS = {
     "lmodern": r"\usepackage{lmodern}",
     "charter": r"\usepackage{charter}",
     "cormorant": r"\usepackage{CormorantGaramond}",
     "fira-sans": r"\usepackage[sfdefault]{FiraSans}",
+    "libertine": r"\usepackage{libertine}",
+    "palatino": r"\usepackage{newpxtext}\usepackage{newpxmath}",
+    "plex-sans": r"\usepackage[sfdefault]{plex-sans}",
+    "roboto": r"\usepackage[sfdefault]{roboto}",
     "source-sans": r"\usepackage[default]{sourcesanspro}",
+    "times": r"\usepackage{newtxtext}\usepackage{newtxmath}",
 }
-
-DEFAULT_SECTION_TITLES = {
+SECTION_TITLES = {
+    "summary": "Professional Summary",
     "experience": "Experience",
     "projects": "Projects",
-    "skills": "Technical Skills",
+    "certifications": "Certifications",
     "education": "Education",
+    "skills": "Technical Skills",
 }
+ESCAPE = str.maketrans({
+    "&": r"\&",
+    "%": r"\%",
+    "$": r"\$",
+    "#": r"\#",
+    "_": r"\_",
+    "{": r"\{",
+    "}": r"\}",
+    "~": r"\textasciitilde{}",
+    "^": r"\textasciicircum{}",
+    "\\": r"\textbackslash{}",
+})
+RICH_RE = re.compile(r"\*\*(.+?)\*\*|_(.+?)_")
+OUTPUT_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+MISSING = object()
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build resume PDFs from YAML files.")
     parser.add_argument("data_paths", nargs="*", type=Path, help="YAML resume files to build")
-    parser.add_argument("--template", type=Path, default=DEFAULT_TEMPLATE, help="LaTeX template path")
-    parser.add_argument("--output-dir", type=Path, help="Output directory (default: build/)")
-    parser.add_argument("--keep-aux", action="store_true", help="Keep pdflatex aux/log files")
-    parser.add_argument("--tex-only", action="store_true", help="Generate .tex only, skip PDF compilation")
+    parser.add_argument("--template", type=Path, default=Path.cwd() / "template.tex")
+    parser.add_argument("--output-dir", type=Path, default=BUILD_DIR)
+    parser.add_argument("--keep-aux", action="store_true")
+    parser.add_argument("--tex-only", action="store_true")
     return parser.parse_args()
 
 
-def discover_data_paths(explicit_paths: list[Path]) -> list[Path]:
-    if explicit_paths:
-        return explicit_paths
-
-    found = sorted(DEFAULT_DATA_DIR.glob("*.yml"))
-    if found:
-        return found
-
-    print("No resume YAML files found. Add a .yml file to resumes/ to get started.")
-    sys.exit(0)
+def data_paths(explicit: list[Path]) -> list[Path]:
+    paths = explicit or sorted(DATA_DIR.glob("*.yml"))
+    if not paths:
+        print("No resume YAML files found. Add a .yml file to resumes/ to get started.")
+        sys.exit(0)
+    return paths
 
 
-def require_mapping(value: object, name: str) -> dict:
-    if not isinstance(value, dict):
-        raise ValueError(f"{name} must be a mapping")
-    return value
+def mapping(value: object, path: str) -> dict:
+    if isinstance(value, dict):
+        return value
+    raise ValueError(f"{path} must be a mapping")
 
 
-def require_list(value: object, name: str) -> list:
-    if not isinstance(value, list):
-        raise ValueError(f"{name} must be a list")
-    return value
+def sequence(value: object, path: str) -> list:
+    if isinstance(value, list):
+        return value
+    raise ValueError(f"{path} must be a list")
 
 
-def require_str(mapping: dict, key: str, path: str) -> str:
-    value = mapping.get(key)
-    if not isinstance(value, str) or not value.strip():
+def text(data: dict, key: str, path: str, default: object = MISSING) -> str:
+    if key not in data:
+        if default is MISSING:
+            raise ValueError(f"{path}.{key} must be a non-empty string")
+        return str(default)
+
+    value = data[key]
+    if value is None and default is not MISSING:
+        return str(default)
+    if not isinstance(value, str):
+        raise ValueError(f"{path}.{key} must be a string")
+
+    value = value.strip()
+    if default is MISSING and not value:
         raise ValueError(f"{path}.{key} must be a non-empty string")
     return value
 
 
-def validate_period(value: object, path: str) -> dict[str, str]:
-    period = require_mapping(value, path)
-    return {
-        "from": require_str(period, "from", path),
-        "to": require_str(period, "to", path),
-    }
+def period(data: dict, key: str, path: str) -> str:
+    value = data.get(key)
+    if value is None:
+        return ""
+    item = mapping(value, f"{path}.{key}")
+    start = text(item, "from", f"{path}.{key}")
+    end = text(item, "to", f"{path}.{key}")
+    return f"{start} -- {end}" if start and end else start or end
 
 
-def validate_entry(value: object, path: str) -> dict:
-    entry = require_mapping(value, path)
-    bullets = require_list(entry.get("bullets"), f"{path}.bullets")
-    for index, bullet in enumerate(bullets):
-        if not isinstance(bullet, str):
-            raise ValueError(f"{path}.bullets[{index}] must be a string")
-    return {
-        "company": require_str(entry, "company", path),
-        "period": validate_period(entry.get("period"), f"{path}.period"),
-        "role": require_str(entry, "role", path),
-        "url": require_str(entry, "url", path),
-        "bullets": bullets,
-    }
+def latex(value: str) -> str:
+    return value.translate(ESCAPE)
 
 
-def validate_resume(raw: object, data_path: Path) -> dict:
-    data = require_mapping(raw, str(data_path))
-    personal = require_mapping(data.get("personal"), "personal")
-    font = data.get("font", "lmodern")
-    if font not in FONT_PACKAGES:
-        allowed = ", ".join(sorted(FONT_PACKAGES))
-        raise ValueError(f"font must be one of: {allowed}")
-
-    output_filename = require_str(data, "output_filename", "resume")
-    if not re.match(r"^[A-Za-z0-9_-]+$", output_filename):
-        raise ValueError("output_filename must only contain letters, digits, _ or -")
-
-    section_titles = {
-        **DEFAULT_SECTION_TITLES,
-        **require_mapping(data.get("section_titles", {}), "section_titles"),
-    }
-    for key in DEFAULT_SECTION_TITLES:
-        if not isinstance(section_titles.get(key), str) or not section_titles[key].strip():
-            raise ValueError(f"section_titles.{key} must be a non-empty string")
-
-    skills = []
-    for index, skill in enumerate(require_list(data.get("skills"), "skills")):
-        skill_map = require_mapping(skill, f"skills[{index}]")
-        skills.append({
-            "label": require_str(skill_map, "label", f"skills[{index}]"),
-            "items": require_str(skill_map, "items", f"skills[{index}]"),
-        })
-
-    education = []
-    for index, item in enumerate(require_list(data.get("education"), "education")):
-        edu = require_mapping(item, f"education[{index}]")
-        education.append({
-            "institution": require_str(edu, "institution", f"education[{index}]"),
-            "period": validate_period(edu.get("period"), f"education[{index}].period"),
-            "degree": require_str(edu, "degree", f"education[{index}]"),
-            "location": require_str(edu, "location", f"education[{index}]"),
-        })
-
-    return {
-        "personal": {
-            "name": require_str(personal, "name", "personal"),
-            "title": require_str(personal, "title", "personal"),
-            "email": require_str(personal, "email", "personal"),
-            "linkedin_url": require_str(personal, "linkedin_url", "personal"),
-            "github_url": require_str(personal, "github_url", "personal"),
-        },
-        "font": font,
-        "section_titles": section_titles,
-        "experience": [
-            validate_entry(item, f"experience[{index}]")
-            for index, item in enumerate(require_list(data.get("experience"), "experience"))
-        ],
-        "projects": [
-            validate_entry(item, f"projects[{index}]")
-            for index, item in enumerate(require_list(data.get("projects", []), "projects"))
-        ],
-        "skills": skills,
-        "education": education,
-        "output_filename": output_filename,
-    }
+def rich(value: str) -> str:
+    parts = []
+    pos = 0
+    for match in RICH_RE.finditer(value):
+        parts.append(latex(value[pos:match.start()]))
+        command = "textbf" if match.group(1) is not None else "textit"
+        parts.append(rf"\{command}{{{latex(match.group(1) or match.group(2))}}}")
+        pos = match.end()
+    return "".join([*parts, latex(value[pos:])])
 
 
-def url_to_domain(url: str) -> str:
+def domain(url: str) -> str:
     hostname = urlparse(url).hostname or ""
     parts = hostname.split(".")
-    min_parts = 3 if re.search(r"\.(com|org|net|gov|edu)\.[a-z]{2}$", hostname) else 2
-    return ".".join(parts[-min_parts:]) if len(parts) > min_parts else hostname
+    keep = 3 if re.search(r"\.(com|org|net|gov|edu)\.[a-z]{2}$", hostname) else 2
+    return ".".join(parts[-keep:]) if len(parts) > keep else hostname
 
 
-def profile_username(url: str) -> str:
+def username(url: str) -> str:
     path = urlparse(url).path.strip("/")
     return path.split("/")[-1] if path else re.sub(r"^https?://", "", url)
 
 
-def rich_to_latex(text: str) -> str:
-    text = re.sub(r"\*\*(.+?)\*\*", r"\\textbf{\1}", text)
-    text = re.sub(r"_(.+?)_", r"\\textit{\1}", text)
-    return text
+def contact(personal: dict) -> str:
+    email = text(personal, "email", "personal")
+    parts = [rf"\contactlink{{mailto:{email}}}{{\faEnvelope}}{{{latex(email)}}}"]
+    if phone := text(personal, "phone", "personal", ""):
+        parts.append(rf"\faPhone\ {latex(phone)}")
+    if location := text(personal, "location", "personal", ""):
+        parts.append(latex(location))
+    if linkedin := text(personal, "linkedin_url", "personal", ""):
+        parts.append(rf"\contactlink{{{linkedin}}}{{\faLinkedin}}{{{latex(username(linkedin))}}}")
+    if github := text(personal, "github_url", "personal", ""):
+        parts.append(rf"\contactlink{{{github}}}{{\faGithub}}{{{latex(username(github))}}}")
+    return r" $|$ ".join(parts)
 
 
-def get_nested(obj: object, key: str) -> object:
-    for part in key.strip().split("."):
-        if isinstance(obj, dict):
-            obj = obj.get(part)
-        else:
-            return None
-    return obj
-
-
-def val(ctx: dict, key: str) -> str:
-    value = get_nested(ctx, key)
-    return "" if value is None else str(value)
-
-
-def render(template: str, ctx: dict) -> str:
-    def repl_cond(match: re.Match) -> str:
-        key, block = match.group(1), match.group(2)
-        value = get_nested(ctx, key)
-        truthy = len(value) > 0 if isinstance(value, (list, dict)) else bool(value)
-        return render(block, ctx) if truthy else ""
-
-    def repl_loop(match: re.Match) -> str:
-        key, block = match.group(1), match.group(2)
-        items = get_nested(ctx, key)
-        if not isinstance(items, list):
-            return ""
-        parts = []
-        for item in items:
-            if isinstance(item, str):
-                parts.append(block.replace("{{.}}", item))
-            elif isinstance(item, dict):
-                parts.append(render(block, {**ctx, **item}))
-        return "".join(parts)
-
-    template = re.sub(r"\{\{\?(\w+)\}\}([\s\S]*?)\{\{\?/\1\}\}", repl_cond, template)
-    template = re.sub(r"\{\{#(\w+)\}\}([\s\S]*?)\{\{/\1\}\}", repl_loop, template)
-    template = re.sub(r"\{\{\{([^}]+)\}\}\}", lambda m: "{" + val(ctx, m.group(1)) + "}", template)
-    template = re.sub(r"\{\{([^#/?{][^}]*)\}\}", lambda m: val(ctx, m.group(1)), template)
-    return template
-
-
-def build_context(data: dict) -> dict:
-    def map_entry(entry: dict) -> dict:
-        return {
-            "company": entry["company"],
-            "role": entry["role"],
-            "url": entry["url"],
-            "period": f"{entry['period']['from']} -- {entry['period']['to']}",
-            "domain": url_to_domain(entry["url"]),
-            "bullets": [rich_to_latex(bullet) for bullet in entry["bullets"]],
-        }
-
+def role(item: object, path: str) -> dict:
+    data = mapping(item, path)
+    url = text(data, "url", path, "")
+    bullets = sequence(data.get("bullets"), f"{path}.bullets")
+    if not all(isinstance(bullet, str) for bullet in bullets):
+        raise ValueError(f"{path}.bullets must contain only strings")
     return {
-        "personal": {
-            "name": data["personal"]["name"],
-            "title": data["personal"]["title"],
-            "email": data["personal"]["email"],
-            "linkedin_url": data["personal"]["linkedin_url"],
-            "github_url": data["personal"]["github_url"],
-            "linkedin_display": profile_username(data["personal"]["linkedin_url"]),
-            "github_display": profile_username(data["personal"]["github_url"]),
-        },
-        "font_package": FONT_PACKAGES[data["font"]],
-        "section_titles": data["section_titles"],
-        "experience": [map_entry(entry) for entry in data["experience"]],
-        "projects": [map_entry(entry) for entry in data["projects"]],
-        "skills": data["skills"],
-        "education": [
-            {
-                "institution": item["institution"],
-                "degree": item["degree"],
-                "location": item["location"],
-                "period": f"{item['period']['from']} -- {item['period']['to']}",
-            }
-            for item in data["education"]
-        ],
-        "output_filename": data["output_filename"],
+        "company": rich(text(data, "company", path)),
+        "period": latex(period(data, "period", path)),
+        "role": rich(text(data, "role", path)),
+        "url": url,
+        "no_url": not url,
+        "domain": latex(domain(url)) if url else "",
+        "bullets": [rich(bullet) for bullet in bullets],
     }
 
 
-def build_resume(
-    data_path: Path,
-    template: str,
-    output_dir: Path | None,
-    keep_aux: bool,
-    tex_only: bool = False,
-) -> Path:
-    raw = yaml.safe_load(data_path.read_text())
-    data = validate_resume(raw, data_path)
-    ctx = build_context(data)
+def education(item: object, path: str) -> dict:
+    data = mapping(item, path)
+    return {
+        "institution": rich(text(data, "institution", path)),
+        "period": latex(period(data, "period", path)),
+        "degree": rich(text(data, "degree", path)),
+        "location": rich(text(data, "location", path)),
+    }
 
-    begin_pos = template.index(BEGIN_DOCUMENT)
-    end_pos = template.index(END_DOCUMENT)
-    tex = (
-        render(template[:begin_pos], ctx)
-        + BEGIN_DOCUMENT
-        + render(template[begin_pos + len(BEGIN_DOCUMENT):end_pos], ctx)
-        + END_DOCUMENT
-        + "\n"
-    )
 
-    target_dir = output_dir or BUILD_DIR
-    target_dir.mkdir(parents=True, exist_ok=True)
+def skill(item: object, path: str) -> dict:
+    data = mapping(item, path)
+    return {"label": rich(text(data, "label", path)), "items": rich(text(data, "items", path))}
 
-    output_name = data["output_filename"]
-    tex_path = target_dir / f"{output_name}.tex"
-    tex_path.write_text(tex)
 
+def string_list(data: dict, key: str) -> list[str]:
+    items = sequence(data.get(key, []), key)
+    if not all(isinstance(item, str) and item.strip() for item in items):
+        raise ValueError(f"{key} must contain only non-empty strings")
+    return [rich(item) for item in items]
+
+
+def build_context(raw: object, data_path: Path) -> dict:
+    data = mapping(raw or {}, str(data_path))
+    personal = mapping(data.get("personal"), "personal")
+    font = text(data, "font", "resume", "lmodern")
+    output = text(data, "output_filename", "resume")
+    titles = {**SECTION_TITLES, **mapping(data.get("section_titles", {}), "section_titles")}
+
+    if font not in FONTS:
+        raise ValueError(f"font must be one of: {', '.join(sorted(FONTS))}")
+    if not OUTPUT_RE.match(output):
+        raise ValueError("output_filename must only contain letters, digits, _ or -")
+    for key in SECTION_TITLES:
+        if not isinstance(titles.get(key), str) or not titles[key].strip():
+            raise ValueError(f"section_titles.{key} must be a non-empty string")
+
+    return {
+        "personal": {
+            "name": rich(text(personal, "name", "personal")),
+            "title": rich(text(personal, "title", "personal")),
+        },
+        "contact_line": contact(personal),
+        "summary": rich(text(data, "summary", "resume", "")),
+        "font_package": FONTS[font],
+        "section_titles": {key: latex(value) for key, value in titles.items()},
+        "experience": [role(item, f"experience[{i}]") for i, item in enumerate(sequence(data.get("experience"), "experience"))],
+        "projects": [role(item, f"projects[{i}]") for i, item in enumerate(sequence(data.get("projects", []), "projects"))],
+        "certifications": string_list(data, "certifications"),
+        "education": [education(item, f"education[{i}]") for i, item in enumerate(sequence(data.get("education"), "education"))],
+        "skills": [skill(item, f"skills[{i}]") for i, item in enumerate(sequence(data.get("skills"), "skills"))],
+        "output_filename": output,
+    }
+
+
+def nested(context: dict, key: str) -> object:
+    value = context
+    for part in key.strip().split("."):
+        if not isinstance(value, dict):
+            return None
+        value = value.get(part)
+    return value
+
+
+def render(template: str, context: dict) -> str:
+    def loop(match: re.Match) -> str:
+        items = nested(context, match.group(1))
+        if not isinstance(items, list):
+            return ""
+        return "".join(
+            match.group(2).replace("{{.}}", item) if isinstance(item, str) else render(match.group(2), {**context, **item})
+            for item in items
+        )
+
+    def cond(match: re.Match) -> str:
+        value = nested(context, match.group(1))
+        truthy = len(value) > 0 if isinstance(value, (list, dict)) else bool(value)
+        return render(match.group(2), context) if truthy else ""
+
+    template = re.sub(r"\{\{#(\w+)\}\}([\s\S]*?)\{\{/\1\}\}", loop, template)
+    template = re.sub(r"\{\{\?(\w+)\}\}([\s\S]*?)\{\{\?/\1\}\}", cond, template)
+    template = re.sub(r"\{\{\{([^}]+)\}\}\}", lambda m: "{" + str(nested(context, m.group(1)) or "") + "}", template)
+    return re.sub(r"\{\{([^#/?{][^}]*)\}\}", lambda m: str(nested(context, m.group(1)) or ""), template)
+
+
+def build_resume(data_path: Path, template: str, output_dir: Path, keep_aux: bool, tex_only: bool) -> Path:
+    context = build_context(yaml.safe_load(data_path.read_text()), data_path)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    output_name = context["output_filename"]
+    tex_path = output_dir / f"{output_name}.tex"
+    tex_path.write_text(render(template, context))
     if tex_only:
         return tex_path
 
-    pdf_path = target_dir / f"{output_name}.pdf"
-    result = subprocess.run(
-        ["pdflatex", "-interaction=nonstopmode", "-output-directory", str(target_dir), str(tex_path)],
-    )
+    pdf_path = output_dir / f"{output_name}.pdf"
+    result = subprocess.run(["pdflatex", "-interaction=nonstopmode", "-output-directory", str(output_dir), str(tex_path)])
     if result.returncode != 0:
         raise RuntimeError(f"pdflatex failed for {data_path}")
     if not pdf_path.exists():
@@ -312,8 +275,7 @@ def build_resume(
 
     if not keep_aux:
         for ext in ("aux", "log", "out", "tex"):
-            (target_dir / f"{output_name}.{ext}").unlink(missing_ok=True)
-
+            (output_dir / f"{output_name}.{ext}").unlink(missing_ok=True)
     return pdf_path
 
 
@@ -323,21 +285,16 @@ def main() -> None:
         print(f"Template not found: {args.template}", file=sys.stderr)
         sys.exit(1)
 
-    template = args.template.read_text()
-    data_paths = discover_data_paths(args.data_paths)
-
     failed = False
-    for path in data_paths:
+    template = args.template.read_text()
+    for path in data_paths(args.data_paths):
         try:
-            out = build_resume(path, template, args.output_dir, args.keep_aux, args.tex_only)
-            label = "TEX" if args.tex_only else "PDF"
-            print(f"{label}: {out}")
+            output = build_resume(path, template, args.output_dir, args.keep_aux, args.tex_only)
+            print(f"{'TEX' if args.tex_only else 'PDF'}: {output}")
         except Exception as exc:
             print(f"FAILED {path}: {exc}", file=sys.stderr)
             failed = True
-
-    if failed:
-        sys.exit(1)
+    sys.exit(failed)
 
 
 if __name__ == "__main__":
