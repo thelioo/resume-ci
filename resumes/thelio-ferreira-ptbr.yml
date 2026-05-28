@@ -64,7 +64,7 @@ skills:
     - label: Bancos de Dados
       items: BigQuery, PostgreSQL, DuckDB
     - label: Cloud e Infraestrutura
-      items: Google Cloud Platform, BigQuery, Cloud Composer, Cloud Storage, Cloud Run, Docker, Docker Compose, Terraform, linux
+      items: Google Cloud Platform, BigQuery, Cloud Composer, Cloud Storage, Cloud Run, Docker, Docker Compose, Terraform, Linux
     - label: Versionamento e Colaboração
       items: Git, GitHub
     - label: Web Complementar
