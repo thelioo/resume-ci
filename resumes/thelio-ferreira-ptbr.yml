@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=../.github/resume.schema.json
+
+personal:
+    name: Thelio Ferreira
+    title: Engenheiro de Dados
+    email: theliomt@gmail.com
+    linkedin_url: https://linkedin.com/in/theliomatheus
+    github_url: https://github.com/thelioo
+
+font: lmodern
+
+section_titles:
+    experience: Experiência Profissional
+    projects: Projetos
+    education: Formação Acadêmica
+    skills: Competências
+
+experience:
+    - company: Addiante Locação de Pesados
+      period:
+          from: Dez 2024
+          to: Atual
+      role: Engenheiro de Dados
+      url: https://addiante.com.br
+      bullets:
+          - Evoluí e mantive em produção um **Data Warehouse em BigQuery** com **Star Schema**, centralizando terabytes de dados de 30+ fontes de telemetria e sistemas internos para dashboards executivos e operacionais.
+          - Otimizei queries críticas no **BigQuery** com particionamento, clustering e refatoração de modelos, reduzindo custo e tempo de execução de cargas analíticas.
+          - Estruturei pipelines **ELT em dbt** em camadas de staging, intermediate e marts, adicionando testes automatizados de qualidade que bloquearam inconsistências antes de chegarem às áreas de negócio.
+          - Orquestrei 50+ DAGs em **Apache Airflow** via **Cloud Composer**, integrando bancos **PostgreSQL** e APIs de telemetria à camada analítica com alertas e SLAs por pipeline.
+          - Liderei a integração end-to-end entre **Salesforce** e **ERP IFS**, eliminando processo manual e reduzindo em mais de 90% o tempo de processamento de propostas comerciais.
+
+projects:
+    - company: CNPJ.WIKI
+      period:
+          from: "2026"
+          to: Atual
+      role: Engenheiro de Dados e Mantenedor
+      url: https://cnpj.wiki
+      bullets:
+          - Concebi, desenvolvi e mantenho uma plataforma open data para consulta de empresas brasileiras, com 60M+ CNPJs indexados a partir da base aberta da Receita Federal e tráfego orgânico recorrente via SEO.
+          - Construí pipeline de ingestão em **Python** e **Polars** com lógica incremental e **CDC**, identificando inclusões, alterações e baixas a cada release oficial sem reprocessar a base completa.
+          - Modelei schema relacional em **PostgreSQL** otimizado para leitura, com índices e denormalização para sustentar consultas em dezenas de milhões de registros com latência sub-segundo.
+          - Disponibilizei **API REST** pública em **NestJS** e frontend em **SvelteKit** otimizado para indexação no Google, rankeando para termos de busca relacionados a CNPJ.
+
+education:
+    - institution: Universidade Federal Fluminense (UFF)
+      period:
+          from: "2022"
+          to: "2024"
+      degree: Bacharelado em Sistemas de Informação
+      location: Niterói, RJ
+    - institution: Centro Universitário União das Américas
+      period:
+          from: "2025"
+          to: "2028"
+      degree: Bacharelado em Sistemas de Informação
+      location: Remoto
+
+skills:
+    - label: Linguagens
+      items: Python, SQL, TypeScript, JavaScript
+    - label: Engenharia de Dados
+      items: Apache Airflow, dbt, Polars, Pandas, ETL/ELT, CDC, Modelagem Dimensional, Star Schema, Data Warehouse, Data Lake, Data Quality, Otimização de Queries
+    - label: Bancos de Dados
+      items: BigQuery, PostgreSQL, DuckDB
+    - label: Cloud e Infraestrutura
+      items: Google Cloud Platform, BigQuery, Cloud Composer, Cloud Storage, Cloud Run, Docker, Docker Compose, Terraform, VPS/Linux
+    - label: Versionamento e Colaboração
+      items: Git, GitHub
+    - label: Web Complementar
+      items: NestJS, SvelteKit, AdonisJS
+    - label: Idiomas
+      items: Português (nativo), Inglês (avançado)
+
+output_filename: curriculo_thelio_ferreira_ptbr
