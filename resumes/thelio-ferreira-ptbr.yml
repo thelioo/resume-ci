@@ -27,7 +27,7 @@ experience:
           - Otimizei queries críticas no **BigQuery** com particionamento, clustering e refatoração de modelos, reduzindo custo e tempo de execução de cargas analíticas.
           - Estruturei pipelines **ELT em dbt** em camadas de staging, intermediate e marts, adicionando testes automatizados de qualidade que bloquearam inconsistências antes de chegarem às áreas de negócio.
           - Orquestrei 50+ DAGs em **Apache Airflow** via **Cloud Composer**, integrando bancos **PostgreSQL** e APIs de telemetria à camada analítica com alertas e SLAs por pipeline.
-          - Liderei a integração end-to-end entre **Salesforce** e **ERP IFS**, eliminando processo manual e reduzindo em mais de 90% o tempo de processamento de propostas comerciais.
+          - Liderei a integração end-to-end entre **Salesforce** e **ERP IFS**, eliminando processo manual e reduzindo em mais de 90 por cento o tempo de processamento de propostas comerciais.
 
 projects:
     - company: CNPJ.WIKI
