@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../.github/resume.schema.json
+# yaml-language-server: $schema=../lib/resume.schema.json
 
 personal:
   name: Alex Morgan
@@ -7,7 +7,7 @@ personal:
   linkedin_url: https://linkedin.com/in/alex-morgan
   github_url: https://github.com/alex-morgan
 
-font: lmodern
+font: New Computer Modern
 
 section_titles:
   experience: Experiência Profissional
